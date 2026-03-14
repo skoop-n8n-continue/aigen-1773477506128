@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Westfield Mall — Wayfinding</title>
+<link rel="stylesheet" href="styles.css?v=x3q7p2">
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <div class="mall-logo">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <rect width="36" height="36" rx="8" fill="#00b7af"/>
+        <path d="M8 26V14l10-7 10 7v12H22v-7h-8v7H8z" fill="white"/>
+      </svg>
+      <span class="mall-name">Westfield<span>Mall</span></span>
+    </div>
+  </div>
+  <div class="header-center">
+    <div class="search-wrap">
+      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="Search stores, restaurants, services..." autocomplete="off">
+      <button class="clear-btn" id="clearSearch" style="display:none">✕</button>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+  <div class="header-right">
+    <div class="floor-selector">
+      <button class="floor-btn active" data-floor="1">Floor 1</button>
+      <button class="floor-btn" data-floor="2">Floor 2</button>
+    </div>
+    <div class="time-display" id="timeDisplay"></div>
+  </div>
+</header>
+
+<!-- Category Bar -->
+<div class="category-bar">
+  <button class="cat-btn active" data-cat="all">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    All Stores
+  </button>
+  <button class="cat-btn" data-cat="food">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+    Food & Dining
+  </button>
+  <button class="cat-btn" data-cat="fashion">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.86H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.86l.58-3.57a2 2 0 00-1.34-2.23z"/></svg>
+    Fashion
+  </button>
+  <button class="cat-btn" data-cat="electronics">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
+    Electronics
+  </button>
+  <button class="cat-btn" data-cat="beauty">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a5 5 0 015 5c0 2.76-5 13-5 13S7 9.76 7 7a5 5 0 015-5z"/></svg>
+    Beauty
+  </button>
+  <button class="cat-btn" data-cat="sports">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/><path d="M2 12h20"/></svg>
+    Sports
+  </button>
+  <button class="cat-btn" data-cat="entertainment">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"/></svg>
+    Entertainment
+  </button>
+  <button class="cat-btn" data-cat="services">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+    Services
+  </button>
+</div>
+
+<!-- Main Layout -->
+<div class="main-layout">
+
+  <!-- Store List Panel -->
+  <aside class="store-panel" id="storePanel">
+    <div class="panel-header">
+      <span id="panelTitle">All Stores</span>
+      <span class="store-count" id="storeCount"></span>
+    </div>
+    <div class="store-list" id="storeList"></div>
+  </aside>
+
+  <!-- Map Area -->
+  <div class="map-container" id="mapContainer">
+    <div class="map-viewport" id="mapViewport">
+      <svg id="mallMap" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
+        <!-- Background -->
+        <rect width="1000" height="700" fill="#f0ede8"/>
+
+        <!-- Mall outline / corridors -->
+        <!-- Main horizontal corridor -->
+        <rect x="0" y="290" width="1000" height="120" fill="#e8e4de" rx="0"/>
+        <!-- Main vertical corridor -->
+        <rect x="440" y="0" width="120" height="700" fill="#e8e4de" rx="0"/>
+
+        <!-- Corridor floor tiles -->
+        <pattern id="tilePattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+          <rect width="40" height="40" fill="#e8e4de"/>
+          <rect x="1" y="1" width="38" height="38" fill="#ede9e3" rx="2"/>
+        </pattern>
+        <rect x="0" y="290" width="1000" height="120" fill="url(#tilePattern)"/>
+        <rect x="440" y="0" width="120" height="700" fill="url(#tilePattern)"/>
+
+        <!-- YOU ARE HERE marker zone (kiosk position) -->
+        <g id="kioskMarker">
+          <circle cx="500" cy="350" r="22" fill="#00b7af" opacity="0.25"/>
+          <circle cx="500" cy="350" r="14" fill="#00b7af" opacity="0.5"/>
+          <circle cx="500" cy="350" r="7" fill="#00b7af"/>
+          <text x="500" y="382" text-anchor="middle" font-size="11" fill="#00b7af" font-weight="700">YOU ARE HERE</text>
+        </g>
+
+        <!-- PATH overlay (shown when store selected) -->
+        <g id="pathOverlay" style="display:none">
+          <path id="navPath" stroke="#00b7af" stroke-width="6" fill="none" stroke-dasharray="12,8" stroke-linecap="round" opacity="0.85"/>
+          <circle id="destMarker" r="16" fill="#ff6b35" stroke="white" stroke-width="3"/>
+          <text id="destLabel" text-anchor="middle" dy="5" font-size="11" fill="white" font-weight="700"></text>
+        </g>
+
+        <!-- FLOOR 1 STORES -->
+        <g id="floor1Stores">
+
+          <!-- NORTH WING (top) -->
+          <!-- Row of stores top-left -->
+          <g class="store-zone" data-store="1">
+            <rect x="20" y="20" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="85" y="60" text-anchor="middle" font-size="12" fill="#333" font-weight="600">H&amp;M</text>
+            <text x="85" y="78" text-anchor="middle" font-size="10" fill="#888">Fashion</text>
+          </g>
+
+          <g class="store-zone" data-store="2">
+            <rect x="170" y="20" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="235" y="60" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Zara</text>
+            <text x="235" y="78" text-anchor="middle" font-size="10" fill="#888">Fashion</text>
+          </g>
+
+          <g class="store-zone" data-store="3">
+            <rect x="320" y="20" width="110" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="375" y="60" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Sephora</text>
+            <text x="375" y="78" text-anchor="middle" font-size="10" fill="#888">Beauty</text>
+          </g>
+
+          <!-- Top right stores -->
+          <g class="store-zone" data-store="4">
+            <rect x="570" y="20" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="635" y="60" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Apple Store</text>
+            <text x="635" y="78" text-anchor="middle" font-size="10" fill="#888">Electronics</text>
+          </g>
+
+          <g class="store-zone" data-store="5">
+            <rect x="720" y="20" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="785" y="60" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Nike</text>
+            <text x="785" y="78" text-anchor="middle" font-size="10" fill="#888">Sports</text>
+          </g>
+
+          <g class="store-zone" data-store="6">
+            <rect x="870" y="20" width="110" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="925" y="60" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Foot Locker</text>
+            <text x="925" y="78" text-anchor="middle" font-size="10" fill="#888">Sports</text>
+          </g>
+
+          <!-- Second row top -->
+          <g class="store-zone" data-store="7">
+            <rect x="20" y="130" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="85" y="170" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Gap</text>
+            <text x="85" y="188" text-anchor="middle" font-size="10" fill="#888">Fashion</text>
+          </g>
+
+          <g class="store-zone" data-store="8">
+            <rect x="170" y="130" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="235" y="170" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Pandora</text>
+            <text x="235" y="188" text-anchor="middle" font-size="10" fill="#888">Beauty</text>
+          </g>
+
+          <g class="store-zone" data-store="9">
+            <rect x="320" y="130" width="110" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="375" y="170" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Starbucks</text>
+            <text x="375" y="188" text-anchor="middle" font-size="10" fill="#888">Food</text>
+          </g>
+
+          <g class="store-zone" data-store="10">
+            <rect x="570" y="130" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="635" y="170" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Samsung</text>
+            <text x="635" y="188" text-anchor="middle" font-size="10" fill="#888">Electronics</text>
+          </g>
+
+          <g class="store-zone" data-store="11">
+            <rect x="720" y="130" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="785" y="170" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Adidas</text>
+            <text x="785" y="188" text-anchor="middle" font-size="10" fill="#888">Sports</text>
+          </g>
+
+          <g class="store-zone" data-store="12">
+            <rect x="870" y="130" width="110" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="925" y="170" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Bath &amp; Body</text>
+            <text x="925" y="188" text-anchor="middle" font-size="10" fill="#888">Beauty</text>
+          </g>
+
+          <!-- SOUTH WING (bottom) -->
+          <g class="store-zone" data-store="13">
+            <rect x="20" y="420" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="85" y="460" text-anchor="middle" font-size="12" fill="#333" font-weight="600">McDonald's</text>
+            <text x="85" y="478" text-anchor="middle" font-size="10" fill="#888">Food</text>
+          </g>
+
+          <g class="store-zone" data-store="14">
+            <rect x="170" y="420" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="235" y="460" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Subway</text>
+            <text x="235" y="478" text-anchor="middle" font-size="10" fill="#888">Food</text>
+          </g>
+
+          <g class="store-zone" data-store="15">
+            <rect x="320" y="420" width="110" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="375" y="460" text-anchor="middle" font-size="12" fill="#333" font-weight="600">AT&amp;T</text>
+            <text x="375" y="478" text-anchor="middle" font-size="10" fill="#888">Services</text>
+          </g>
+
+          <g class="store-zone" data-store="16">
+            <rect x="570" y="420" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="635" y="460" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Chipotle</text>
+            <text x="635" y="478" text-anchor="middle" font-size="10" fill="#888">Food</text>
+          </g>
+
+          <g class="store-zone" data-store="17">
+            <rect x="720" y="420" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="785" y="460" text-anchor="middle" font-size="12" fill="#333" font-weight="600">GameStop</text>
+            <text x="785" y="478" text-anchor="middle" font-size="10" fill="#888">Entertainment</text>
+          </g>
+
+          <g class="store-zone" data-store="18">
+            <rect x="870" y="420" width="110" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="925" y="460" text-anchor="middle" font-size="12" fill="#333" font-weight="600">T-Mobile</text>
+            <text x="925" y="478" text-anchor="middle" font-size="10" fill="#888">Services</text>
+          </g>
+
+          <!-- Second row bottom -->
+          <g class="store-zone" data-store="19">
+            <rect x="20" y="530" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="85" y="570" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Panda Express</text>
+            <text x="85" y="588" text-anchor="middle" font-size="10" fill="#888">Food</text>
+          </g>
+
+          <g class="store-zone" data-store="20">
+            <rect x="170" y="530" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="235" y="570" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Forever 21</text>
+            <text x="235" y="588" text-anchor="middle" font-size="10" fill="#888">Fashion</text>
+          </g>
+
+          <g class="store-zone" data-store="21">
+            <rect x="320" y="530" width="110" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="375" y="570" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Claire's</text>
+            <text x="375" y="588" text-anchor="middle" font-size="10" fill="#888">Beauty</text>
+          </g>
+
+          <g class="store-zone" data-store="22">
+            <rect x="570" y="530" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="635" y="570" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Best Buy</text>
+            <text x="635" y="588" text-anchor="middle" font-size="10" fill="#888">Electronics</text>
+          </g>
+
+          <g class="store-zone" data-store="23">
+            <rect x="720" y="530" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="785" y="570" text-anchor="middle" font-size="12" fill="#333" font-weight="600">AMC Cinemas</text>
+            <text x="785" y="588" text-anchor="middle" font-size="10" fill="#888">Entertainment</text>
+          </g>
+
+          <g class="store-zone" data-store="24">
+            <rect x="870" y="530" width="110" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="925" y="570" text-anchor="middle" font-size="12" fill="#333" font-weight="600">UPS Store</text>
+            <text x="925" y="588" text-anchor="middle" font-size="10" fill="#888">Services</text>
+          </g>
+
+        </g>
+
+        <!-- FLOOR 2 STORES (hidden by default) -->
+        <g id="floor2Stores" style="display:none">
+
+          <g class="store-zone" data-store="25">
+            <rect x="20" y="20" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="85" y="60" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Nordstrom</text>
+            <text x="85" y="78" text-anchor="middle" font-size="10" fill="#888">Fashion</text>
+          </g>
+
+          <g class="store-zone" data-store="26">
+            <rect x="170" y="20" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="235" y="60" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Macy's</text>
+            <text x="235" y="78" text-anchor="middle" font-size="10" fill="#888">Fashion</text>
+          </g>
+
+          <g class="store-zone" data-store="27">
+            <rect x="320" y="20" width="110" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="375" y="60" text-anchor="middle" font-size="12" fill="#333" font-weight="600">MAC Cosmetics</text>
+            <text x="375" y="78" text-anchor="middle" font-size="10" fill="#888">Beauty</text>
+          </g>
+
+          <g class="store-zone" data-store="28">
+            <rect x="570" y="20" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="635" y="60" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Microsoft</text>
+            <text x="635" y="78" text-anchor="middle" font-size="10" fill="#888">Electronics</text>
+          </g>
+
+          <g class="store-zone" data-store="29">
+            <rect x="720" y="20" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="785" y="60" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Under Armour</text>
+            <text x="785" y="78" text-anchor="middle" font-size="10" fill="#888">Sports</text>
+          </g>
+
+          <g class="store-zone" data-store="30">
+            <rect x="870" y="20" width="110" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="925" y="60" text-anchor="middle" font-size="12" fill="#333" font-weight="600">New Balance</text>
+            <text x="925" y="78" text-anchor="middle" font-size="10" fill="#888">Sports</text>
+          </g>
+
+          <g class="store-zone" data-store="31">
+            <rect x="20" y="130" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="85" y="170" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Levi's</text>
+            <text x="85" y="188" text-anchor="middle" font-size="10" fill="#888">Fashion</text>
+          </g>
+
+          <g class="store-zone" data-store="32">
+            <rect x="170" y="130" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="235" y="170" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Kiehl's</text>
+            <text x="235" y="188" text-anchor="middle" font-size="10" fill="#888">Beauty</text>
+          </g>
+
+          <g class="store-zone" data-store="33">
+            <rect x="320" y="130" width="110" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="375" y="170" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Din Tai Fung</text>
+            <text x="375" y="188" text-anchor="middle" font-size="10" fill="#888">Food</text>
+          </g>
+
+          <g class="store-zone" data-store="34">
+            <rect x="570" y="130" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="635" y="170" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Sony Store</text>
+            <text x="635" y="188" text-anchor="middle" font-size="10" fill="#888">Electronics</text>
+          </g>
+
+          <g class="store-zone" data-store="35">
+            <rect x="720" y="130" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="785" y="170" text-anchor="middle" font-size="12" fill="#333" font-weight="600">REI</text>
+            <text x="785" y="188" text-anchor="middle" font-size="10" fill="#888">Sports</text>
+          </g>
+
+          <g class="store-zone" data-store="36">
+            <rect x="870" y="130" width="110" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="925" y="170" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Lush</text>
+            <text x="925" y="188" text-anchor="middle" font-size="10" fill="#888">Beauty</text>
+          </g>
+
+          <g class="store-zone" data-store="37">
+            <rect x="20" y="420" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="85" y="460" text-anchor="middle" font-size="12" fill="#333" font-weight="600">The Cheesecake Factory</text>
+            <text x="85" y="478" text-anchor="middle" font-size="10" fill="#888">Food</text>
+          </g>
+
+          <g class="store-zone" data-store="38">
+            <rect x="170" y="420" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="235" y="460" text-anchor="middle" font-size="12" fill="#333" font-weight="600">P.F. Chang's</text>
+            <text x="235" y="478" text-anchor="middle" font-size="10" fill="#888">Food</text>
+          </g>
+
+          <g class="store-zone" data-store="39">
+            <rect x="320" y="420" width="110" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="375" y="460" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Hair Cuttery</text>
+            <text x="375" y="478" text-anchor="middle" font-size="10" fill="#888">Services</text>
+          </g>
+
+          <g class="store-zone" data-store="40">
+            <rect x="570" y="420" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="635" y="460" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Shake Shack</text>
+            <text x="635" y="478" text-anchor="middle" font-size="10" fill="#888">Food</text>
+          </g>
+
+          <g class="store-zone" data-store="41">
+            <rect x="720" y="420" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="785" y="460" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Dave &amp; Buster's</text>
+            <text x="785" y="478" text-anchor="middle" font-size="10" fill="#888">Entertainment</text>
+          </g>
+
+          <g class="store-zone" data-store="42">
+            <rect x="870" y="420" width="110" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="925" y="460" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Chase Bank</text>
+            <text x="925" y="478" text-anchor="middle" font-size="10" fill="#888">Services</text>
+          </g>
+
+          <g class="store-zone" data-store="43">
+            <rect x="20" y="530" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="85" y="570" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Olive Garden</text>
+            <text x="85" y="588" text-anchor="middle" font-size="10" fill="#888">Food</text>
+          </g>
+
+          <g class="store-zone" data-store="44">
+            <rect x="170" y="530" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="235" y="570" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Anthropologie</text>
+            <text x="235" y="588" text-anchor="middle" font-size="10" fill="#888">Fashion</text>
+          </g>
+
+          <g class="store-zone" data-store="45">
+            <rect x="320" y="530" width="110" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="375" y="570" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Nail Spa</text>
+            <text x="375" y="588" text-anchor="middle" font-size="10" fill="#888">Beauty</text>
+          </g>
+
+          <g class="store-zone" data-store="46">
+            <rect x="570" y="530" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="635" y="570" text-anchor="middle" font-size="12" fill="#333" font-weight="600">iRepair</text>
+            <text x="635" y="588" text-anchor="middle" font-size="10" fill="#888">Services</text>
+          </g>
+
+          <g class="store-zone" data-store="47">
+            <rect x="720" y="530" width="130" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="785" y="570" text-anchor="middle" font-size="12" fill="#333" font-weight="600">Escape Room</text>
+            <text x="785" y="588" text-anchor="middle" font-size="10" fill="#888">Entertainment</text>
+          </g>
+
+          <g class="store-zone" data-store="48">
+            <rect x="870" y="530" width="110" height="90" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/>
+            <text x="925" y="570" text-anchor="middle" font-size="12" fill="#333" font-weight="600">FedEx Office</text>
+            <text x="925" y="588" text-anchor="middle" font-size="10" fill="#888">Services</text>
+          </g>
+
+        </g>
+
+        <!-- Amenities labels on corridor -->
+        <g font-size="11" fill="#999" text-anchor="middle">
+          <text x="500" y="310">⬆ NORTH WING</text>
+          <text x="500" y="400">⬇ SOUTH WING</text>
+          <text x="100" y="350">◀ WEST ENTRANCE</text>
+          <text x="870" y="350">EAST ENTRANCE ▶</text>
+          <!-- Elevator icons -->
+          <g transform="translate(450,320)">
+            <rect x="0" y="0" width="24" height="24" rx="4" fill="#666"/>
+            <text x="12" y="17" text-anchor="middle" font-size="13" fill="white">🛗</text>
+          </g>
+          <g transform="translate(530,320)">
+            <rect x="0" y="0" width="24" height="24" rx="4" fill="#666"/>
+            <text x="12" y="17" text-anchor="middle" font-size="13" fill="white">🚻</text>
+          </g>
+        </g>
+
+        <!-- Entrance arrows -->
+        <g fill="#00b7af" opacity="0.6">
+          <polygon points="30,350 50,340 50,360" />
+          <polygon points="970,350 950,340 950,360" />
+          <polygon points="500,30 490,50 510,50" />
+          <polygon points="500,670 490,650 510,650" />
+        </g>
+
+      </svg>
+    </div>
+
+    <!-- Map Controls -->
+    <div class="map-controls">
+      <button class="map-btn" id="zoomIn" title="Zoom In">+</button>
+      <button class="map-btn" id="zoomOut" title="Zoom Out">−</button>
+      <button class="map-btn" id="resetView" title="Reset View">⊙</button>
+    </div>
+
+    <!-- Legend -->
+    <div class="map-legend">
+      <div class="legend-item"><span class="legend-dot you"></span>You Are Here</div>
+      <div class="legend-item"><span class="legend-dot dest"></span>Destination</div>
+      <div class="legend-item"><span class="legend-line"></span>Route</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Store Detail Panel (popup) -->
+<div class="store-detail-overlay" id="storeDetail" style="display:none">
+  <div class="store-detail-card">
+    <button class="close-detail" id="closeDetail">✕</button>
+    <div class="detail-icon" id="detailIcon"></div>
+    <h2 id="detailName"></h2>
+    <div class="detail-meta">
+      <span class="detail-cat" id="detailCat"></span>
+      <span class="detail-floor" id="detailFloor"></span>
+    </div>
+    <div class="detail-hours">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+      <span id="detailHours"></span>
+    </div>
+    <div class="detail-desc" id="detailDesc"></div>
+    <button class="get-directions-btn" id="getDirections">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3,11 22,2 13,21 11,13"/></svg>
+      Get Directions
+    </button>
+  </div>
+</div>
+
+<!-- Directions Panel -->
+<div class="directions-panel" id="directionsPanel" style="display:none">
+  <div class="dir-header">
+    <div class="dir-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3,11 22,2 13,21 11,13"/></svg>
+      <span>Directions</span>
+    </div>
+    <button class="dir-close" id="closeDirections">✕</button>
+  </div>
+  <div class="dir-route">
+    <div class="dir-from">
+      <div class="dir-dot you"></div>
+      <span>You Are Here (Kiosk)</span>
+    </div>
+    <div class="dir-arrow">↓</div>
+    <div class="dir-to">
+      <div class="dir-dot dest"></div>
+      <span id="dirDestName"></span>
+    </div>
+  </div>
+  <div class="dir-steps" id="dirSteps"></div>
+  <div class="dir-eta">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+    <span id="dirEta"></span>
+  </div>
+</div>
+
+<script src="app.js?v=x3q7p2"></script>
+</body>
+</html>
